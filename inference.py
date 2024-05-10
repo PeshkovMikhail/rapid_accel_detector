@@ -13,6 +13,7 @@ from aiogram.types import BufferedInputFile
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.utils.markdown import hbold
 import io
 import numpy as np
@@ -146,7 +147,11 @@ async def command_start_handler(message: Message) -> None:
 async def echo_handler(message: types.Message) -> None:
     # Send a copy of the received message
     file_id = message.video.file_id
-    file = await bot.get_file(file_id)
+    try:
+        file = await bot.get_file(file_id)
+    except TelegramBadRequest as e:
+        await message.answer(f"{e}")
+        return
     file_path = file.file_path
     print(file_path)
     

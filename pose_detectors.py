@@ -13,7 +13,11 @@ class YOLODetector:
         keypoints = results[0].keypoints.xy.cpu().tolist()
         cls = results[0].boxes.cls.int().cpu().tolist()
         confs = results[0].keypoints.conf.cpu().tolist()
-        return map(lambda t: (t[0], t[1], t[2], t[4]), filter(lambda t: t[3] == 0, zip(boxes, track_ids, keypoints, cls, confs)))
+
+        res = list(map(lambda t: (t[0], t[1], t[2], t[4]), filter(lambda t: t[3] == 0, zip(boxes, track_ids, keypoints, cls, confs))))
+        if len(res) == 0 or res is None:
+            return [], [], [], []
+        return res
     
 class VitPoseDetector:
     def __init__(self) -> None:

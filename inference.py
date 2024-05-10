@@ -152,18 +152,16 @@ async def command_start_handler(message: Message) -> None:
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
     await message.answer(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=keyboard)
 
-@dp.message(F.text.lower() == "YOLOv8")
-async def use_yolo():
-    POSE_DETECTOR = "yolo"
-
-@dp.message(F.text.lower() == "ViTPose")
-async def use_vit():
-    POSE_DETECTOR = "vitpose"
-
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
     # Send a copy of the received message
-    if not message.video:
+    if message.text == "YOLOv8":
+        POSE_DETECTOR = "yolo"
+        return
+    elif message.text == "ViTPose":
+        POSE_DETECTOR = "vitpose"
+        return
+    elif not message.video:
         await message.answer("Video required")
         return
 

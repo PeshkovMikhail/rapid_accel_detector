@@ -34,24 +34,21 @@ class ActionDetector:
 
     def update_poses(self, image, frame_id):
         current_poses = {}
-        try:
-            bboxes, track_ids, kps, confs = self.pose_detector.track(image)
-            for bbox, track_id, kp, conf in zip(bboxes, track_ids, kps, confs):
-                track_info= self.info_per_frame.get(track_id,
-                    {
-                        "bboxes": np.zeros((POSEC3D_INPUT_FRAMES_COUNT, 4)),
-                        "keypoints": np.zeros((1, POSEC3D_INPUT_FRAMES_COUNT, KP_COUNT, 2)),
-                        "score": np.zeros((1, POSEC3D_INPUT_FRAMES_COUNT, KP_COUNT))
-                    })
-                track_info['bboxes'][frame_id % POSEC3D_INPUT_FRAMES_COUNT] = np.array(bbox)
-                current_poses[track_id] = np.zeros((KP_COUNT, 2))
-                for i in range(KP_COUNT):
-                    track_info['keypoints'][0, frame_id % POSEC3D_INPUT_FRAMES_COUNT, i] = kp[i]
-                    track_info['score'][0, frame_id % POSEC3D_INPUT_FRAMES_COUNT, i] = conf[i]
-                    current_poses[track_id][i] = kp[i]
-                self.info_per_frame[track_id] = track_info
-        except:
-            print(self.pose_detector.track(image))
+        
+        for bbox, track_id, kp, conf in self.pose_detector.track(image):
+            track_info= self.info_per_frame.get(track_id,
+                {
+                    "bboxes": np.zeros((POSEC3D_INPUT_FRAMES_COUNT, 4)),
+                    "keypoints": np.zeros((1, POSEC3D_INPUT_FRAMES_COUNT, KP_COUNT, 2)),
+                    "score": np.zeros((1, POSEC3D_INPUT_FRAMES_COUNT, KP_COUNT))
+                })
+            track_info['bboxes'][frame_id % POSEC3D_INPUT_FRAMES_COUNT] = np.array(bbox)
+            current_poses[track_id] = np.zeros((KP_COUNT, 2))
+            for i in range(KP_COUNT):
+                track_info['keypoints'][0, frame_id % POSEC3D_INPUT_FRAMES_COUNT, i] = kp[i]
+                track_info['score'][0, frame_id % POSEC3D_INPUT_FRAMES_COUNT, i] = conf[i]
+                current_poses[track_id][i] = kp[i]
+            self.info_per_frame[track_id] = track_info
         return current_poses
     
 

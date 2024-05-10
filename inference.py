@@ -163,6 +163,10 @@ async def use_vit():
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
     # Send a copy of the received message
+    if not message.video:
+        await message.answer("Video required")
+        return
+
     file_id = message.video.file_id
     try:
         file = await bot.get_file(file_id)

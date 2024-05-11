@@ -16,3 +16,6 @@ POSEC3D_INPUT_FRAMES_COUNT = 48
 ### GENERAL SETTINGS
 
 POSE_DETECTOR = "yolo" # "yolo" or "vit-pose"
+
+### TELEGRAM SETTINGS
+TOKEN = ""

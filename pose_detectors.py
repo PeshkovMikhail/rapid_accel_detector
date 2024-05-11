@@ -1,4 +1,9 @@
 import ultralytics
+import ViTPoseTrack.VitPose as vit
+import numpy as np
+
+def xyxy2xywh(boxes):
+    return np.concatenate([(boxes[...,:2]+boxes[...,2:])/2,boxes[...,2:]-boxes[...,:2]],len(boxes.shape)-1)
 
 class YOLODetector:
     def __init__(self):
@@ -21,7 +26,12 @@ class YOLODetector:
     
 class VitPoseDetector:
     def __init__(self) -> None:
-        pass
+        self.detect = vit.VitPose('YOLOX-s','ViTPose-B (multi-task train, COCO)',0.5,0.5)
+        
 
     def track(self, image):
-        pass
+        res = self.detect.process_one(image)
+        return map(lambda t: (xyxy2xywh(t['bbox'][:4]),t['track_id'],t['keypoints'][:,:2],t['keypoints'][:,2]),res)
+    
+
+        

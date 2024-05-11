@@ -122,10 +122,6 @@ def models_thread() :
         time.sleep(2)
 
 
-
-# Bot token can be obtained via https://t.me/BotFather
-TOKEN = os.getenv('TELEGRAM_TOKEN')
-
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)

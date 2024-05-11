@@ -44,9 +44,11 @@ class TrackData:
             return np.nan
         
         #update sector's average pixel height
-        self.average_height_sectors[coords[1] // self.sector_len[1], coords[0] // self.sector_len[0]] += np.array([pixel_height, 1])
+        y = min(coords[1] // self.sector_len[1], HEIGHT_SECTORS-1)
+        x = min(coords[0] // self.sector_len[0], WIDTH_SECTORS)
+        self.average_height_sectors[y, x] += np.array([pixel_height, 1])
 
-        height_sum, count = self.average_height_sectors[coords[1] // self.sector_len[1], coords[0] // self.sector_len[0]]
+        height_sum, count = self.average_height_sectors[y, x]
         average_pixel_height = height_sum / count
         height = pixel_height / average_pixel_height * AVERAGE_HEIGHT
 

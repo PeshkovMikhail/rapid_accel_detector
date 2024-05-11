@@ -113,7 +113,7 @@ def models_thread() :
             output_f.mux(packet)
             output_f.close()
             output_memory_file.seek(0) 
-            send_fut = asyncio.run_coroutine_threadsafe(asyncio.run_coroutine_threadsafe(send_result(task['id'], output_memory_file), loop=task['loop']))
+            send_fut = asyncio.run_coroutine_threadsafe(send_result(task['id'], output_memory_file), loop=task['loop'])
             send_fut.result()
             del output_memory_file
             del input_file

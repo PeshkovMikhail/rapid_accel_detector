@@ -1,0 +1,9 @@
+aiogram==3.6.0
+av==11.0.0
+numpy==1.24.3
+onnxruntime_gpu==1.17.1
+opencv_contrib_python==4.9.0.80
+opencv_python==4.9.0.80
+opencv_python_headless==4.7.0.72
+torch==2.0.0
+ultralytics==8.1.19

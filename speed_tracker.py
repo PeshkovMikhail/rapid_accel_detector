@@ -64,7 +64,7 @@ class TrackData:
     
     def vector_speed(self):
         speeds = self.speed_data[np.all(self.speed_data[:] != [0, 0], axis=1)]
-        return np.sum(speeds, axis=0) / (self.period * speeds.shape[0])
+        return np.sum(speeds, axis=0) / (self.period * speeds.shape[0] * FPS_DIVIDER)
     
     def normal_speed(self):
         speeds = np.abs(self.speed_data[np.all(self.speed_data[:] != [0, 0], axis=1)])

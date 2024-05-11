@@ -3,6 +3,7 @@ import cv2
 import threading
 import queue
 import time
+import math
 
 import asyncio
 import logging
@@ -24,6 +25,29 @@ from preprocess import *
 from config import *
 from speed_tracker import SpeedTracker
 from action_detector import ActionDetector
+
+def vector(image,track):
+
+    # Определите начальную и конечную точки для стрелки
+    start_point = (int(track[-1][0]),int(track[-1][1]))  # Начальная точка стрелки
+    end_point = (int(track[0][0]+2*(track[-1][0]-track[0][0])),int(track[0][1]+2*(track[-1][1]-track[0][1])))  # Конечная точка стрелки
+
+    # Нарисуйте линию от начальной до конечной точки
+    cv2.line(image, start_point, end_point, (255, 0, 0), 1)
+
+    # Нарисуйте стрелочку
+    # Определите длину и угол стрелки
+    length = 10
+    angle = np.arctan2(start_point[1] - end_point[1], start_point[0] - end_point[0])
+
+    # Нарисуйте конечный треугольник для стрелки
+    pt1 = (int(end_point[0] + length * np.cos(angle + np.pi / 6)),
+        int(end_point[1] + length * np.sin(angle + np.pi / 6)))
+    pt2 = (int(end_point[0] + length * np.cos(angle - np.pi / 6)),
+        int(end_point[1] + length * np.sin(angle - np.pi / 6)))
+
+    cv2.line(image, end_point, pt1, (255, 0, 0), 1)
+    cv2.line(image, end_point, pt2, (255, 0, 0), 1)
 
 transforms = [
     UniformSampleFrames(POSEC3D_INPUT_FRAMES_COUNT),
@@ -124,7 +148,7 @@ def models_thread() :
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
-bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot("7109375396:AAHzEudLFsEDTgXOlQfrd8xpA1xAf7sneZI", parse_mode=ParseMode.HTML) #Bot(TOKEN, parse_mode=ParseMode.HTML)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -152,10 +176,16 @@ async def command_start_handler(message: Message) -> None:
 async def echo_handler(message: types.Message) -> None:
     # Send a copy of the received message
     if message.text == "YOLOv8":
-        POSE_DETECTOR = "yolo"
+        f = open(".pose_detector", "w")
+        # POSE_DETECTOR = "yolo"
+        f.write("yolo")
+        f.close()
         return
     elif message.text == "ViTPose":
-        POSE_DETECTOR = "vitpose"
+        f = open(".pose_detector", "w")
+        # POSE_DETECTOR = "vitpose"
+        f.write("vitpose")
+        f.close()
         return
     elif not message.video:
         await message.answer("Video required")

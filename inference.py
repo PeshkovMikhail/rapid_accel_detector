@@ -148,7 +148,7 @@ def models_thread() :
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
-bot = Bot("7109375396:AAHzEudLFsEDTgXOlQfrd8xpA1xAf7sneZI", parse_mode=ParseMode.HTML) #Bot(TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:

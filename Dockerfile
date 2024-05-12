@@ -15,3 +15,5 @@ RUN pip3 uninstall opencv-python-headless -y
 RUN pip3 install opencv-python-headless
 
 EXPOSE 3000
+
+CMD ["python", "inference.py"]

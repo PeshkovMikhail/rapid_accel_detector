@@ -20,3 +20,9 @@ pip install -r requirements.txt
 ```
 python inference.py
 ```
+## Запуск в docker
+После клонирования перейдите в репозиторий и введите:
+```
+docker build . -t rapidaccelbot
+docker run rapidaccelbot
+```

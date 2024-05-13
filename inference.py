@@ -20,6 +20,7 @@ import io
 import numpy as np
 import os, copy
 import gc
+import sqlite3
 
 from preprocess import *
 from config import *
@@ -94,7 +95,7 @@ def models_thread() :
             framebuffer = np.zeros((POSEC3D_INPUT_FRAMES_COUNT, height, width, 3), np.uint8)
             
             speed_tracker = SpeedTracker(height, width, 1 / fps)
-            action_detector = ActionDetector(height, width, "posec3d.onnx")
+            action_detector = ActionDetector(height, width, "posec3d.onnx", task['user_id'])
 
             output_memory_file = io.BytesIO()
             output_f = av.open(output_memory_file, 'w', format="mp4")  # Open "in memory file" as MP4 video output
@@ -145,6 +146,16 @@ def models_thread() :
             task_queue.task_done()
         time.sleep(2)
 
+# Создание таблицы пользователей в базе данных
+def create_table():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users
+                      (user_id INTEGER PRIMARY KEY, data TEXT)''')
+    conn.commit()
+    conn.close()
+
+create_table()
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
@@ -155,6 +166,12 @@ async def command_start_handler(message: Message) -> None:
     """
     This handler receives messages with `/start` command
     """
+    user_id = message.from_user.id
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (user_id, data) VALUES (?, ?)", (user_id, "yolo"))
+    conn.commit()
+    conn.close()
     kb = [
         [
             types.KeyboardButton(text="YOLOv8"),
@@ -174,18 +191,21 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
+    user_id = message.from_user.id
     # Send a copy of the received message
     if message.text == "YOLOv8":
-        f = open(".pose_detector", "w")
-        # POSE_DETECTOR = "yolo"
-        f.write("yolo")
-        f.close()
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET data = ? WHERE user_id = ?", ("yolo", user_id))
+        conn.commit()
+        conn.close()
         return
     elif message.text == "ViTPose":
-        f = open(".pose_detector", "w")
-        # POSE_DETECTOR = "vitpose"
-        f.write("vitpose")
-        f.close()
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET data = ? WHERE user_id = ?", ("vitpose", user_id))
+        conn.commit()
+        conn.close()
         return
     elif not message.video:
         await message.answer("Video required")
@@ -205,6 +225,7 @@ async def echo_handler(message: types.Message) -> None:
     task['input_file'] = await bot.download_file(file_path)
     task['id'] = message.chat.id
     task['loop'] = asyncio.get_event_loop()
+    task['user_id']
     await message.answer("Processing video")
     task_queue.put(task)
     

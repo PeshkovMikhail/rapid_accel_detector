@@ -17,5 +17,8 @@ POSEC3D_INPUT_FRAMES_COUNT = 48
 
 POSE_DETECTOR = "yolo" # "yolo" or "vit-pose"
 
+# Настройки базы данных
+DATABASE = 'users.db'
+
 ### TELEGRAM SETTINGS
 TOKEN = ""

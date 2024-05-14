@@ -23,10 +23,7 @@ transforms = [
 
 class ActionDetector:
     def __init__(self, height, width, model_path):
-        f = open(".pose_detector")
-        pd = f.read()
-        f.close()
-        self.pose_detector = YOLODetector() if pd == "yolo" else VitPoseDetector()
+        self.pose_detector = YOLODetector() if POSE_DETECTOR == "yolo" else VitPoseDetector()
         self.session = onnxruntime.InferenceSession(model_path)
 
         self.height = height

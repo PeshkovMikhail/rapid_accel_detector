@@ -3,7 +3,7 @@ import cv2
 import threading
 import queue
 import time
-import math
+import torch
 
 import asyncio
 import logging
@@ -25,29 +25,6 @@ from preprocess import *
 from config import *
 from speed_tracker import SpeedTracker
 from action_detector import ActionDetector
-
-def vector(image,track):
-
-    # Определите начальную и конечную точки для стрелки
-    start_point = (int(track[-1][0]),int(track[-1][1]))  # Начальная точка стрелки
-    end_point = (int(track[0][0]+2*(track[-1][0]-track[0][0])),int(track[0][1]+2*(track[-1][1]-track[0][1])))  # Конечная точка стрелки
-
-    # Нарисуйте линию от начальной до конечной точки
-    cv2.line(image, start_point, end_point, (255, 0, 0), 1)
-
-    # Нарисуйте стрелочку
-    # Определите длину и угол стрелки
-    length = 10
-    angle = np.arctan2(start_point[1] - end_point[1], start_point[0] - end_point[0])
-
-    # Нарисуйте конечный треугольник для стрелки
-    pt1 = (int(end_point[0] + length * np.cos(angle + np.pi / 6)),
-        int(end_point[1] + length * np.sin(angle + np.pi / 6)))
-    pt2 = (int(end_point[0] + length * np.cos(angle - np.pi / 6)),
-        int(end_point[1] + length * np.sin(angle - np.pi / 6)))
-
-    cv2.line(image, end_point, pt1, (255, 0, 0), 1)
-    cv2.line(image, end_point, pt2, (255, 0, 0), 1)
 
 transforms = [
     UniformSampleFrames(POSEC3D_INPUT_FRAMES_COUNT),
@@ -126,8 +103,14 @@ def models_thread() :
                                 int(b[f][1] + b[f][3]/2)
                             ))
                             if k in speed_per_frame[f].keys():
-                                img = cv2.putText(img, f"{speed_per_frame[f][k]*3.6:.2f} km/h", pt1 - np.array([0, 20]), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA, False)
+                                img = cv2.putText(img, f"{speed_per_frame[f][k]['speed']*3.6:.2f} km/h", pt1 - np.array([0, 20]), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA, False)
                                 img = cv2.rectangle(img, pt1, pt2, color, 3)
+
+                                pt1 = speed_per_frame[f][k]['vector']['coords']
+                                pt2 = pt1 + speed_per_frame[f][k]['vector']['delta']
+                                if np.any(np.isnan(pt1)) or np.any(np.isnan(pt2)):
+                                    continue
+                                img = cv2.line(img, pt1.astype(np.int32), pt2.astype(np.int32), color, 5)
                         res_img = av.VideoFrame.from_ndarray(img, format='rgb24') # Convert image from NumPy Array to frame.
                         packet = stream.encode(res_img)  # Encode video frame
                         output_f.mux(packet)
@@ -148,46 +131,24 @@ def models_thread() :
 
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
-bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(os.getenv("TELEGRAM_TOKEN"), parse_mode=ParseMode.HTML)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
     """
     This handler receives messages with `/start` command
     """
-    kb = [
-        [
-            types.KeyboardButton(text="YOLOv8"),
-            types.KeyboardButton(text="ViTPose")
-        ],
-    ]
-    keyboard = types.ReplyKeyboardMarkup(
-        keyboard=kb,
-        resize_keyboard=True
-    )
     # Most event objects have aliases for API methods that can be called in events' context
     # For example if you want to answer to incoming message you can use `message.answer(...)` alias
     # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
     # method automatically or call API method directly via
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!", reply_markup=keyboard)
+    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
 
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
     # Send a copy of the received message
-    if message.text == "YOLOv8":
-        f = open(".pose_detector", "w")
-        # POSE_DETECTOR = "yolo"
-        f.write("yolo")
-        f.close()
-        return
-    elif message.text == "ViTPose":
-        f = open(".pose_detector", "w")
-        # POSE_DETECTOR = "vitpose"
-        f.write("vitpose")
-        f.close()
-        return
-    elif not message.video:
+    if not message.video:
         await message.answer("Video required")
         return
 
@@ -211,6 +172,7 @@ async def echo_handler(message: types.Message) -> None:
 
 
 async def main() -> None:
+    print(f"Torch cuda status: {torch.cuda.is_available()}")
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
     threading.Thread(target=models_thread, daemon=True).start()
     # And the run events dispatching

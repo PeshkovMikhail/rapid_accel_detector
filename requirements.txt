@@ -37,9 +37,6 @@ h5py
 timm
 cython_bbox
 onemetric
-mmcv-full==1.7.2
-mmengine==0.10.4
-mmdet==2.26.0
 opencv-python-headless
 av
 aiogram

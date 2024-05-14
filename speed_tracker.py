@@ -85,16 +85,20 @@ def get_pixel_height(kp):
     right_state = not np.all(kp[RIGHT_HIP] == [0, 0]) and not np.all(kp[RIGHT_ANKLE] == [0, 0]) and not np.all(kp[RIGHT_KNEE] == [0, 0])
     left_state = not np.all(kp[LEFT_HIP] == [0, 0]) and not np.all(kp[LEFT_ANKLE] == [0, 0]) and not np.all(kp[LEFT_KNEE] == [0, 0])
     if right_state and left_state:
-        return top - max(right, left)
+        return abs(top - max(right, left))
     elif right_state:
-        return top - right
+        return abs(top - right)
     elif left_state:
-        return top - left
+        return abs(top - left)
     return np.nan
 
 
 def get_coords(kp):
     body = kp[TRACK_POINTS]
+    return body[np.all(body[:] != [0, 0], axis=1)].transpose((1, 0)).mean(axis=1).astype(np.int32)
+
+def get_chest(kp):
+    body = kp[CHEST_POINTS]
     return body[np.all(body[:] != [0, 0], axis=1)].transpose((1, 0)).mean(axis=1).astype(np.int32)
 
 
@@ -107,12 +111,27 @@ class SpeedTracker:
         self.average_height_sectors = np.zeros((HEIGHT_SECTORS, WIDTH_SECTORS, 2))
     
     def speed(self, poses: dict, frame_id):
-        res = {}
+        res = {
+            "speed": {},
+            "vector": {}
+        }
         for track_id, kp in poses.items():
             if track_id not in self.average_speed.keys():
                 self.average_speed[track_id] = TrackData(frame_id, self.average_height_sectors, self.sector_len, self.period)
             if frame_id % FPS_DIVIDER == 0:
-                res[track_id] = self.average_speed[track_id].update_speed(kp, frame_id)
+                res[track_id] = {
+                    "speed": self.average_speed[track_id].update_speed(kp, frame_id),
+                    "vector": {
+                        "delta": self.average_speed[track_id].vector_speed() * get_pixel_height(kp),
+                        "coords": get_chest(kp)
+                    }
+                }
                 continue
-            res[track_id] = self.average_speed[track_id].normal_speed()
+            res[track_id] = {
+                "speed": self.average_speed[track_id].normal_speed(),
+                "vector": {
+                    "delta": self.average_speed[track_id].vector_speed() * get_pixel_height(kp),
+                    "coords": get_chest(kp)
+                }
+            }
         return res

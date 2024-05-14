@@ -29,7 +29,8 @@ class ActionDetector:
         cursor.execute("SELECT data FROM users WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
         conn.close()
-        self.pose_detector = YOLODetector() if result == "yolo" else VitPoseDetector()
+        print("-----------------------",result[0])
+        self.pose_detector = YOLODetector() if result[0] == "yolo" else VitPoseDetector()
         self.session = onnxruntime.InferenceSession(model_path)
 
         self.height = height

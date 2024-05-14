@@ -225,7 +225,7 @@ async def echo_handler(message: types.Message) -> None:
     task['input_file'] = await bot.download_file(file_path)
     task['id'] = message.chat.id
     task['loop'] = asyncio.get_event_loop()
-    task['user_id']
+    task['user_id'] = message.from_user.id
     await message.answer("Processing video")
     task_queue.put(task)
     

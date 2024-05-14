@@ -21,4 +21,4 @@ POSE_DETECTOR = "yolo" # "yolo" or "vit-pose"
 DATABASE = 'users.db'
 
 ### TELEGRAM SETTINGS
-TOKEN = ""
+TOKEN = "6572620758:AAGEybUapw_XPOGzxpVhgIK6BSR-kg9c7og"

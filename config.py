@@ -16,3 +16,6 @@ POSEC3D_INPUT_FRAMES_COUNT = 48
 ### GENERAL SETTINGS
 
 POSE_DETECTOR = "vit-pose" # "yolo" or "vit-pose"
+
+# Настройки базы данных
+DATABASE = 'users.db'

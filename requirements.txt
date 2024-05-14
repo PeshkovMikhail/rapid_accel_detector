@@ -41,3 +41,4 @@ opencv-python-headless
 av
 aiogram
 ultralytics
+# sqlite3

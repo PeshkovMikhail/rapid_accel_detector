@@ -4,6 +4,7 @@ import copy
 from pose_detectors import YOLODetector, VitPoseDetector
 from preprocess import *
 from config import *
+import sqlite3
 
 KP_COUNT = 17
 
@@ -22,8 +23,14 @@ transforms = [
 ]
 
 class ActionDetector:
-    def __init__(self, height, width, model_path):
-        self.pose_detector = YOLODetector() if POSE_DETECTOR == "yolo" else VitPoseDetector()
+    def __init__(self, height, width, model_path, user_id):
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT data FROM users WHERE user_id = ?", (user_id,))
+        result = cursor.fetchone()
+        conn.close()
+        print("-----------------------",result[0])
+        self.pose_detector = YOLODetector() if result[0] == "yolo" else VitPoseDetector()
         self.session = onnxruntime.InferenceSession(model_path)
 
         self.height = height

@@ -4,25 +4,10 @@
 После ввода команды `/start` бот вас поприветствует. Далее с помощью кнопок под строкой ввода вы можете выбрать детектор (YOLOv8 работает быстрее, а ViTPose - надёжнее), либо отправить видео длительностью более двух секунд. Через некоторое время после отправки появится сообщение о том, что началась обработка, а ещё через несколько минут (продолжительность ожидания зависит от выбранного детектора) появится обработанное видео.
 
 ![Screenshot Telegram.](./images/Screenshot_telegram.png)
-## Самостоятельный запуск
-### Клонирование репозитория и настройка:
-С помощью команды `git clone https://github.com/PeshkovMikhail/rapid_accel_detector` клонируйте данный репозиторий, после чего в файле config.py передайте переменной TOKEN значение токена вашего чат-бота в Telegram.
 
-![Screenshot VS Code](./images/Screenshot_vsCode.png)
-
-### Установите зависимости:
-```
-pip install -r requirements.txt
-```
-
-### Запуск
-Введите:
-```
-python inference.py
-```
 ## Запуск в docker
 После клонирования и настройки перейдите в репозиторий и введите:
 ```
 docker build . -t rapidaccelbot
-docker run rapidaccelbot
+docker run -e TELEGRAM_TOKEN="TELEGRAM_TOKEN" rapidaccelbot
 ```

@@ -84,8 +84,8 @@ def models_thread() :
             
                 framebuffer[frame_id % POSEC3D_INPUT_FRAMES_COUNT] = img_np.copy()
 
-                current_speed = action_detector.update_poses(img_np, frame_id)
-                speed_per_frame.append(speed_tracker.speed(current_speed, frame_id))
+                current_pose = action_detector.update_poses(img_np, frame_id)
+                speed_per_frame.append(speed_tracker.speed(current_pose, frame_id))
 
                 if (frame_id + 1) % POSEC3D_INPUT_FRAMES_COUNT == 0:
                     classes = action_detector.classify()
@@ -108,9 +108,11 @@ def models_thread() :
                                 img = cv2.rectangle(img, pt1, pt2, color, 3)
 
                                 pt1 = speed_per_frame[f][k]['vector']['coords']
-                                pt2 = pt1 + speed_per_frame[f][k]['vector']['delta']
-                                if np.any(np.isnan(pt1)) or np.any(np.isnan(pt2)):
+                                delta = speed_per_frame[f][k]['vector']['delta']
+                                if np.any(np.isnan(pt1)) or np.any(np.isnan(delta)):
                                     continue
+                                pt2 = pt1 + (delta / np.linalg.norm(delta) * VECTOR_PIXEL_LENGTH).astype(np.int32)
+                                
                                 img = cv2.line(img, pt1.astype(np.int32), pt2.astype(np.int32), color, 5)
                         res_img = av.VideoFrame.from_ndarray(img, format='rgb24') # Convert image from NumPy Array to frame.
                         packet = stream.encode(res_img)  # Encode video frame
@@ -209,7 +211,7 @@ async def echo_handler(message: types.Message) -> None:
     task['id'] = message.chat.id
     task['loop'] = asyncio.get_event_loop()
     task['user_id'] = message.from_user.id
-    await message.answer("Processing video")
+    await message.answer(f"Processing video. {task_queue.qsize()} in queue")
     task_queue.put(task)
     
 

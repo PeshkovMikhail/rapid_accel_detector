@@ -29,6 +29,8 @@ class ActionDetector:
         cursor.execute("SELECT data FROM users WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
         conn.close()
+        if not result:
+            result = ["yolo"]
         print("-----------------------",result[0])
         self.pose_detector = YOLODetector() if result[0] == "yolo" else VitPoseDetector()
         self.session = onnxruntime.InferenceSession(model_path)

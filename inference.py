@@ -172,7 +172,7 @@ async def command_start_handler(message: Message) -> None:
     # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
     # method automatically or call API method directly via
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
+    await message.answer("""Здравствуйте, бот принимает только видео в формате mp4!\nКонтакт для связи: @mexerily""")
 
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
@@ -184,6 +184,7 @@ async def echo_handler(message: types.Message) -> None:
         cursor.execute("UPDATE users SET data = ? WHERE user_id = ?", ("yolo", user_id))
         conn.commit()
         conn.close()
+        await message.answer("Модель детекции изменена на yolo")
         return
     elif message.text == "ViTPose":
         conn = sqlite3.connect(DATABASE)
@@ -191,9 +192,10 @@ async def echo_handler(message: types.Message) -> None:
         cursor.execute("UPDATE users SET data = ? WHERE user_id = ?", ("vit-pose", user_id))
         conn.commit()
         conn.close()
+        await message.answer("Модель детекции изменена на vitpose")
         return
     elif not message.video:
-        await message.answer("Video required")
+        await message.answer("Требуется видео")
         return
 
     file_id = message.video.file_id
@@ -211,7 +213,7 @@ async def echo_handler(message: types.Message) -> None:
     task['id'] = message.chat.id
     task['loop'] = asyncio.get_event_loop()
     task['user_id'] = message.from_user.id
-    await message.answer(f"Processing video. {task_queue.qsize()} in queue")
+    await message.answer(f"Видео обрабатывается. {task_queue.qsize()} в очереди")
     task_queue.put(task)
     
 
